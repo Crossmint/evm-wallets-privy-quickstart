@@ -1,25 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useWallet } from "@crossmint/client-sdk-react-ui";
-import { PublicKey } from "@solana/web3.js";
 import {
-  createSolTransferTransaction,
-  createTokenTransferTransaction,
-} from "@/lib/createTransaction";
-
-const isSolanaAddressValid = (address: string) => {
-  try {
-    new PublicKey(address);
-    return true;
-  } catch (error) {
-    return false;
-  }
-};
+  type EVMSmartWalletChain,
+  useWallet,
+} from "@crossmint/client-sdk-react-ui";
+import { Address, encodeFunctionData, erc20Abi, isAddress } from "viem";
 
 export function TransferFunds() {
   const { wallet, type } = useWallet();
-  const [token, setToken] = useState<"sol" | "usdc" | null>("sol");
+  const [token, setToken] = useState<"eth" | "usdc" | null>(null);
   const [recipient, setRecipient] = useState<string | null>(null);
   const [amount, setAmount] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +19,7 @@ export function TransferFunds() {
     if (
       wallet == null ||
       token == null ||
-      type !== "solana-smart-wallet" ||
+      type !== "evm-smart-wallet" ||
       recipient == null ||
       amount == null
     ) {
@@ -37,31 +27,38 @@ export function TransferFunds() {
       return;
     }
 
-    // Validate Solana recipient address
-    if (token === "sol" && !isSolanaAddressValid(recipient)) {
-      alert("Transfer: Invalid Solana recipient address");
+    // Validate EVM recipient address
+    if (!isAddress(recipient)) {
+      alert("Transfer: Invalid recipient address");
       return;
     }
 
     try {
       setIsLoading(true);
-      function buildTransaction() {
-        return token === "sol"
-          ? createSolTransferTransaction(wallet?.address!, recipient!, amount!)
-          : createTokenTransferTransaction(
-              wallet?.address!,
-              recipient!,
-              process.env.NEXT_PUBLIC_USDC_TOKEN_MINT ||
-                "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU", // USDC token mint
-              amount!
-            );
+      let txn;
+      if (token === "eth") {
+        // For ETH transfers, we use native transfer
+        txn = await wallet.sendTransaction({
+          to: recipient as Address,
+          value: BigInt(amount * 10 ** 9), // Convert to Gwei
+          data: "0x", // Empty data for native transfers
+          chain: process.env.NEXT_PUBLIC_CHAIN as EVMSmartWalletChain,
+        });
+      } else if (token === "usdc") {
+        // For USDC transfers, we use ERC20 transfer
+        const data = encodeFunctionData({
+          abi: erc20Abi,
+          functionName: "transfer",
+          args: [recipient as Address, BigInt(amount * 10 ** 6)], // USDC has 6 decimals
+        });
+        txn = await wallet.sendTransaction({
+          to: "0x5fd84259d66Cd46123540766Be93DFE6D43130D7", // USDC token mint on OP sepolia
+          value: BigInt(0),
+          data,
+          chain: process.env.NEXT_PUBLIC_CHAIN as EVMSmartWalletChain,
+        });
       }
-
-      const txn = await buildTransaction();
-      const txnHash = await wallet.sendTransaction({
-        transaction: txn,
-      });
-      setTxnHash(`https://solscan.io/tx/${txnHash}?cluster=devnet`);
+      setTxnHash(`https://optimism-sepolia.blockscout.com/tx/${txn}`);
     } catch (err) {
       console.error("Transfer: ", err);
       alert("Transfer: " + err);
@@ -86,20 +83,20 @@ export function TransferFunds() {
                   type="radio"
                   name="token"
                   className="h-4 w-4"
-                  checked={token === "usdc"}
-                  onChange={() => setToken("usdc")}
+                  checked={token === "eth"}
+                  onChange={() => setToken("eth")}
                 />
-                <span>USDC</span>
+                <span>ETH</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="token"
                   className="h-4 w-4"
-                  checked={token === "sol"}
-                  onChange={() => setToken("sol")}
+                  checked={token === "usdc"}
+                  onChange={() => setToken("usdc")}
                 />
-                <span>SOL</span>
+                <span>USDC</span>
               </label>
             </div>
           </div>
@@ -142,7 +139,7 @@ export function TransferFunds() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            → View on Solscan (refresh to update balance)
+            → View on Explorer (refresh to update balance)
           </a>
         )}
       </div>
