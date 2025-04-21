@@ -4,14 +4,12 @@ import { useEffect, useState } from "react";
 import {
   type DelegatedSigner,
   EVMSmartWalletChain,
-  useAuth,
   useWallet,
 } from "@crossmint/client-sdk-react-ui";
 import { cn } from "@/lib/utils";
 
 export function DelegatedSigner() {
   const { wallet, type } = useWallet();
-  const { jwt } = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
   const [delegatedSigners, setDelegatedSigners] = useState<DelegatedSigner[]>(
@@ -27,7 +25,7 @@ export function DelegatedSigner() {
       }
     };
     fetchDelegatedSigners();
-  }, [wallet, jwt]);
+  }, [wallet]);
 
   const addNewSigner = async () => {
     if (wallet == null || type !== "evm-smart-wallet") {
