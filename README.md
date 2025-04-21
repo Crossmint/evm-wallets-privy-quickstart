@@ -7,7 +7,7 @@
 <h1>Crossmint Wallets EVM Quickstart (Privy)</h1>
 
 <div align="center">
-<a href="https://solana-wallets.demos-crossmint.com/">Live Demo</a> | <a href="https://docs.crossmint.com/introduction/platform/wallets">Docs</a> | <a href="https://github.com/crossmint">See all quickstarts</a>
+<a href="https://evm-wallets-privy.demos-crossmint.com/">Live Demo</a> | <a href="https://docs.crossmint.com/introduction/platform/wallets">Docs</a> | <a href="https://github.com/crossmint">See all quickstarts</a>
 </div>
 
 <br>
@@ -27,7 +27,7 @@ Create and manage Crossmint wallets on EVM chains using Privy to handle user aut
 ## Deploy
 Easily deploy the template to Vercel with the button below. You will need to set the required environment variables in the Vercel dashboard.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FCrossmint%2Fsolana-wallets-quickstart&env=NEXT_PUBLIC_CROSSMINT_API_KEY)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FCrossmint%2Fevm-wallets-privy-quickstart&env=NEXT_PUBLIC_CROSSMINT_API_KEY)
 
 ## Setup
 1. Clone the repository and navigate to the project folder:
