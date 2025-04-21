@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "todo: update",
-  description: "todo: update",
+  title: "Privy Crossmint EVM Quickstart",
+  description: "Privy Crossmint EVM Quickstart",
 };
 
 export default function RootLayout({
